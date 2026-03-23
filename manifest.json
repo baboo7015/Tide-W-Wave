@@ -1,10 +1,39 @@
 {
   "manifest_version": 3,
-  "name": "Crypto Risk Calculator",
-  "version": "1.0.0",
-  "description": "Профессиональный калькулятор риск-менеджмента. Базовый модуль экосистемы Tide-W-Wave (Элдер + VWAP + EMA).",
+  "name": "Tide-W-Wave Assistant",
+  "version": "2.0.0",
+  "description": "Плавающий торговый оверлей и калькулятор рисков (Элдер + VWAP + EMA).",
   "action": {
-    "default_popup": "index.html",
-    "default_title": "Открыть калькулятор рисков"
+    "default_title": "Открыть Tide-W-Wave"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.mexc.com/*",
+        "*://*.tradingview.com/*",
+        "*://*.coinglass.com/*",
+        "*://*.bingx.com/*",
+        "*://*.bybit.com/*",
+        "*://*.binance.com/*"
+      ],
+      "js": ["content.js"]
+    }
+  ],
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Alt+C",
+        "mac": "Alt+C"
+      },
+      "description": "Открыть/закрыть калькулятор"
+    }
   }
 }
