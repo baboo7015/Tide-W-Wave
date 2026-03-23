@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "Crypto Risk Calculator",
+  "version": "1.0.0",
+  "description": "Профессиональный калькулятор риск-менеджмента. Базовый модуль экосистемы Tide-W-Wave (Элдер + VWAP + EMA).",
+  "action": {
+    "default_popup": "index.html",
+    "default_title": "Открыть калькулятор рисков"
+  }
+}

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Risk Calculator (T-W-W)</title>
+    <style>
+        :root {
+            --bg-main: #121420;
+            --bg-panel: #1e2233;
+            --text-main: #ffffff;
+            --text-muted: #8b8fa3;
+            --border-color: #2a2d3a;
+            --btn-blue: #2b6cb0;
+            --btn-blue-hover: #2c5282;
+            --color-green: #00b074;
+            --color-red: #ff5e5e;
+            --color-neutral: #f6c343;
+        }
+
+        [data-theme="light"] {
+            --bg-main: #f5f7fa;
+            --bg-panel: #ffffff;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --border-color: #d1d5db;
+            --btn-blue: #3b82f6;
+            --btn-blue-hover: #2563eb;
+            --color-green: #059669;
+            --color-red: #dc2626;
+            --color-neutral: #d97706;
+        }
+
+        /* ЖЕСТКАЯ ФИКСАЦИЯ РАЗМЕРОВ без скролла */
+        body {
+            width: 320px;
+            /* Высота чуть меньше 600px, чтобы браузер точно не включил скролл */
+            height: 585px; 
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 8px 12px; /* Уменьшили верхний/нижний отступ */
+            margin: 0;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            transition: background-color 0.3s, color 0.3s;
+            overflow: hidden; /* Строго запрещаем скролл */
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 4px; /* Поджали */
+            margin-bottom: 4px;  /* Поджали */
+        }
+        h2 { margin: 0; font-size: 14px; color: var(--text-main); text-align: center; flex-grow: 1; }
+        .theme-btn {
+            background: none; border: none; font-size: 14px; cursor: pointer;
+            padding: 0; color: var(--text-main); width: auto; margin: 0;
+        }
+
+        /* Максимально уплотняем отступы */
+        .section-title { font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin: 6px 0 2px 0; letter-spacing: 0.5px; }
+        label { display: block; margin-bottom: 2px; font-size: 11px; color: var(--text-muted); }
+        input, select {
+            width: 100%; box-sizing: border-box; 
+            padding: 4px 6px; /* <-- Уменьшили высоту инпутов по вашему совету */
+            margin-bottom: 4px;
+            background-color: var(--bg-panel); border: 1px solid var(--border-color); 
+            color: var(--text-main); border-radius: 4px; outline: none; font-size: 12px;
+            transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+        }
+        input:focus, select:focus { border-color: var(--color-green); }
+        .flex-row { display: flex; gap: 8px; }
+        .flex-row > div { flex: 1; }
+        
+        .direction-toggle { display: flex; margin-bottom: 6px; background: var(--bg-panel); border-radius: 4px; overflow: hidden; border: 1px solid var(--border-color); }
+        .direction-toggle label {
+            flex: 1; text-align: center; padding: 4px 0; margin: 0; cursor: pointer;
+            font-size: 11px; font-weight: bold; color: var(--text-muted); transition: 0.2s;
+        }
+        .direction-toggle input { display: none; }
+        .direction-toggle input[value="long"]:checked + label { background-color: var(--color-green); color: white; }
+        .direction-toggle input[value="short"]:checked + label { background-color: var(--color-red); color: white; }
+
+        .calc-btn {
+            width: 100%; padding: 6px; /* Поджали кнопку */
+            background-color: var(--btn-blue); color: white;
+            border: none; border-radius: 4px; font-weight: bold; cursor: pointer;
+            margin-top: 2px; transition: background 0.2s; font-size: 13px;
+        }
+        .calc-btn:hover { background-color: var(--btn-blue-hover); }
+        
+        #result { margin-top: 6px; padding: 6px 8px; background-color: var(--bg-panel); border-radius: 4px; display: none; border: 1px solid var(--border-color); }
+        .result-row { display: flex; justify-content: space-between; margin-bottom: 2px; font-size: 11px; }
+        .highlight { font-weight: bold; color: var(--text-main); font-size: 12px; }
+        .green { color: var(--color-green); font-weight: bold; }
+        .red { color: var(--color-red); font-weight: bold; }
+        .neutral { color: var(--color-neutral); font-weight: bold; }
+        hr { border: 0; border-top: 1px solid var(--border-color); margin: 4px 0; }
+        .small-text { font-size: 10px; color: var(--text-muted); }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div style="width: 20px;"></div>
+        <h2>📊 T-W-W Risk Calculator</h2>
+        <button id="theme-toggle" class="theme-btn" title="Сменить тему">☀️</button>
+    </div>
+
+    <div class="direction-toggle">
+        <input type="radio" id="dir_long" name="direction" value="long" checked>
+        <label for="dir_long">🟢 LONG</label>
+        
+        <input type="radio" id="dir_short" name="direction" value="short">
+        <label for="dir_short">🔴 SHORT</label>
+    </div>
+
+    <div class="section-title">Параметры счета</div>
+    <div class="flex-row">
+        <div>
+            <label>Депозит ($)</label>
+            <input type="number" id="deposit" value="1000">
+        </div>
+        <div>
+            <label>Риск (%)</label>
+            <input type="number" id="risk" value="1" step="0.1">
+        </div>
+    </div>
+    <div class="flex-row">
+        <div>
+            <label>Плечо (x)</label>
+            <input type="number" id="leverage" value="10">
+        </div>
+        <div>
+            <label>Комиссия Taker (%)</label>
+            <input type="number" id="fee_pct" value="0.05" step="0.01">
+        </div>
+    </div>
+
+    <div class="section-title">Параметры сделки</div>
+    <div>
+        <label>Цена входа (Entry)</label>
+        <input type="number" id="entry" placeholder="Напр: 71300">
+    </div>
+
+    <div class="flex-row" style="align-items: flex-end;">
+        <div style="flex: 1.2;">
+            <label>Стоп-лосс (SL)</label>
+            <select id="sl_mode">
+                <option value="price">Цена ($)</option>
+                <option value="percent">Процент (%)</option>
+                <option value="points">Пункты</option>
+            </select>
+        </div>
+        <div style="flex: 1;">
+            <input type="number" id="sl_value" placeholder="Значение" step="0.01">
+        </div>
+    </div>
+
+    <div class="flex-row" style="align-items: flex-end;">
+        <div style="flex: 1.2;">
+            <label>Тейк-профит (TP)</label>
+            <select id="tp_mode">
+                <option value="ratio">Коэфф. (R/R)</option>
+                <option value="price">Цена ($)</option>
+                <option value="percent">Процент (%)</option>
+                <option value="points">Пункты</option>
+            </select>
+        </div>
+        <div style="flex: 1;">
+            <input type="number" id="tp_value" value="2" step="0.1">
+        </div>
+    </div>
+
+    <button id="calc-btn" class="calc-btn">Рассчитать позицию</button>
+
+    <div id="result">
+        <div class="result-row"><span>Размер позиции:</span> <span id="out-vol" class="highlight"></span></div>
+        <div class="result-row"><span>Необходимая маржа:</span> <span id="out-margin"></span></div>
+        <hr>
+        <div class="result-row"><span>Стоп-лосс:</span> <span id="out-sl" class="red"></span></div>
+        <div class="result-row"><span>Тейк-профит:</span> <span id="out-tp" class="green"></span></div>
+        <div class="result-row"><span>Фактический R/R:</span> <span id="out-actual-rr" class="neutral"></span></div>
+        <hr>
+        <div class="result-row small-text"><span>Прибыль по графику:</span> <span id="out-gross-profit" class="green"></span></div>
+        <div class="result-row"><span>Чистая прибыль (TP):</span> <span id="out-net-profit" class="highlight green"></span></div>
+        <hr>
+        <div class="result-row small-text"><span>Убыток по графику:</span> <span id="out-gross-loss" class="red"></span></div>
+        <div class="result-row small-text"><span>Издержки (комиссии):</span> <span id="out-fee" class="red"></span></div>
+        <div class="result-row"><span>Чистый убыток (SL):</span> <span id="out-net-loss" class="highlight red"></span></div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>
