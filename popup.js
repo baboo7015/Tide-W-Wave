@@ -1,10 +1,9 @@
-document.addEventListener('DOMContentLoaded', function() {
-    
+document.addEventListener('DOMContentLoaded', function () {
+
     // --- ЛОГИКА ПЕРЕКЛЮЧЕНИЯ ТЕМЫ ---
     const themeToggleBtn = document.getElementById('theme-toggle');
     const htmlElement = document.documentElement;
-    
-    // Проверяем сохраненную тему (используем localStorage)
+
     const savedTheme = localStorage.getItem('tide-v-wave-theme') || 'dark';
     htmlElement.setAttribute('data-theme', savedTheme);
     themeToggleBtn.innerText = savedTheme === 'dark' ? '☀️' : '🌙';
@@ -12,16 +11,13 @@ document.addEventListener('DOMContentLoaded', function() {
     themeToggleBtn.addEventListener('click', () => {
         const currentTheme = htmlElement.getAttribute('data-theme');
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        
+
         htmlElement.setAttribute('data-theme', newTheme);
         localStorage.setItem('tide-v-wave-theme', newTheme);
         themeToggleBtn.innerText = newTheme === 'dark' ? '☀️' : '🌙';
     });
 
     // --- ЛОГИКА КАЛЬКУЛЯТОРА ---
-    const SLIPPAGE_BUFFER = 0.0003; 
-
-    // Привязываем функцию расчета к кнопке (вместо onclick)
     document.getElementById('calc-btn').addEventListener('click', calculate);
 
     function calculate() {
@@ -29,22 +25,25 @@ document.addEventListener('DOMContentLoaded', function() {
         const riskPct = parseFloat(document.getElementById('risk').value);
         const leverage = parseFloat(document.getElementById('leverage').value);
         const feePctInput = parseFloat(document.getElementById('fee_pct').value);
+        const slippagePctInput = parseFloat(document.getElementById('slippage_pct').value);
         const entry = parseFloat(document.getElementById('entry').value);
-        
+
         const isLong = document.querySelector('input[name="direction"]:checked').value === 'long';
-        
+
         const slMode = document.getElementById('sl_mode').value;
         const slInputValue = parseFloat(document.getElementById('sl_value').value);
-        
+
         const tpMode = document.getElementById('tp_mode').value;
         const tpInputValue = parseFloat(document.getElementById('tp_value').value);
 
-        if (!dep || !riskPct || !leverage || !entry || !slInputValue || !tpInputValue) {
+        // Разрешаем комиссии и проскальзыванию быть равными 0, но запрещаем быть пустыми (NaN)
+        if (!dep || !riskPct || !leverage || !entry || !slInputValue || !tpInputValue || isNaN(feePctInput) || isNaN(slippagePctInput)) {
             alert("Пожалуйста, заполните все поля корректно!");
             return;
         }
 
         const feeDecimal = feePctInput / 100;
+        const slippageDecimal = slippagePctInput / 100;
 
         // Расчет SL
         let slPrice, slDistanceAbs, stopDistancePct;
@@ -88,8 +87,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Математика позиции
         const riskInDollars = dep * (riskPct / 100);
-        const totalFeesAndSlippage = (feeDecimal * 2) + SLIPPAGE_BUFFER;
-        
+        // Теперь издержки считаются динамически на основе ввода пользователя
+        const totalFeesAndSlippage = (feeDecimal * 2) + slippageDecimal;
+
         const positionVolume = riskInDollars / (stopDistancePct + totalFeesAndSlippage);
         const requiredMargin = positionVolume / leverage;
         const estimatedFees = positionVolume * totalFeesAndSlippage;
@@ -113,14 +113,14 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('out-margin').innerText = requiredMargin.toFixed(2) + " USDT (x" + leverage + ")";
         document.getElementById('out-sl').innerText = slPrice.toFixed(2);
         document.getElementById('out-tp').innerText = tpPrice.toFixed(2);
-        
+
         const rrElement = document.getElementById('out-actual-rr');
-        rrElement.innerText = "1 : " + actualRR.toFixed(2);
+        rrElement.innerText = "1 : " + parseFloat(actualRR.toFixed(2));
         rrElement.className = actualRR >= 2 ? "green" : (actualRR >= 1.5 ? "neutral" : "red");
 
         document.getElementById('out-gross-profit').innerText = "+" + grossProfit.toFixed(2) + " $";
         document.getElementById('out-net-profit').innerText = "+" + netProfit.toFixed(2) + " $";
-        
+
         document.getElementById('out-gross-loss').innerText = "-" + grossLoss.toFixed(2) + " $";
         document.getElementById('out-fee').innerText = "-" + estimatedFees.toFixed(2) + " $";
         document.getElementById('out-net-loss').innerText = "-" + netLoss.toFixed(2) + " $";
