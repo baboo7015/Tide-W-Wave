@@ -197,15 +197,55 @@ function fetchPriceFromDOM() {
     return null;
 }
 
-// 7. Открытие/Закрытие + Автоподстановка цены
+// 7. Открытие/Закрытие + Умный Real-Time трекинг цены
+let priceInterval = null;
+let userEditedPrice = false;
+const entryInput = shadow.getElementById('entry');
+
+// Следим за тем, начал ли пользователь вводить цену руками (для лимиток)
+entryInput.addEventListener('input', () => {
+    userEditedPrice = true;
+});
+
+// Если пользователь стер свою цену, снова включаем авто-трекинг
+entryInput.addEventListener('blur', () => {
+    if (entryInput.value.trim() === '') {
+        userEditedPrice = false;
+    }
+});
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "toggleCalculator") {
         const isHidden = container.style.display === "none";
+        
         if (isHidden) {
+            // Окно открывается!
+            container.style.display = "block";
+            userEditedPrice = false; // Сбрасываем флаг ручного ввода
+            
+            // Мгновенно подставляем цену при открытии
             const currentPrice = fetchPriceFromDOM();
-            if (currentPrice) shadow.getElementById('entry').value = currentPrice;
+            if (currentPrice) entryInput.value = currentPrice;
+
+            // Запускаем живое обновление (каждые 500 миллисекунд)
+            priceInterval = setInterval(() => {
+                // Обновляем, только если юзер не вводит свою цену и курсор не в этом поле
+                if (!userEditedPrice && shadow.activeElement !== entryInput) {
+                    const livePrice = fetchPriceFromDOM();
+                    if (livePrice) {
+                        entryInput.value = livePrice;
+                    }
+                }
+            }, 500);
+
+        } else {
+            // Окно закрывается! Останавливаем трекинг, чтобы не грузить процессор
+            container.style.display = "none";
+            if (priceInterval) {
+                clearInterval(priceInterval);
+                priceInterval = null;
+            }
         }
-        container.style.display = isHidden ? "block" : "none";
     }
 });
 
