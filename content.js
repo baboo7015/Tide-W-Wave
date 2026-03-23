@@ -1,64 +1,38 @@
-// content.js
-
-// 1. Создаем контейнер-капсулу, который будет висеть поверх сайта
+// 1. Создаем контейнер-капсулу
 const container = document.createElement('div');
 container.id = 'tww-extension-root';
-// Изначально скрыт, позиционируется абсолютно
 container.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 99999999;
-    display: none;
+    position: fixed; top: 20px; right: 20px;
+    z-index: 99999999; display: none;
 `;
 
-// 2. Создаем Shadow DOM (непробиваемая защита от чужого CSS)
+// 2. Создаем Shadow DOM
 const shadow = container.attachShadow({ mode: 'open' });
 
-// 3. Добавляем наши стили внутрь Shadow DOM
+// 3. Добавляем стили
 const style = document.createElement('style');
 style.textContent = `
     :host {
-        --bg-main: #121420;
-        --bg-panel: #1e2233;
-        --text-main: #ffffff;
-        --text-muted: #8b8fa3;
-        --border-color: #2a2d3a;
-        --btn-blue: #2b6cb0;
-        --btn-blue-hover: #2c5282;
-        --color-green: #00b074;
-        --color-red: #ff5e5e;
+        --bg-main: #121420; --bg-panel: #1e2233; --text-main: #ffffff;
+        --text-muted: #8b8fa3; --border-color: #2a2d3a; --btn-blue: #2b6cb0;
+        --btn-blue-hover: #2c5282; --color-green: #00b074; --color-red: #ff5e5e;
         --color-neutral: #f6c343;
     }
     :host([data-theme="light"]) {
-        --bg-main: #f5f7fa;
-        --bg-panel: #ffffff;
-        --text-main: #111827;
-        --text-muted: #6b7280;
-        --border-color: #d1d5db;
-        --btn-blue: #3b82f6;
-        --btn-blue-hover: #2563eb;
-        --color-green: #059669;
-        --color-red: #dc2626;
+        --bg-main: #f5f7fa; --bg-panel: #ffffff; --text-main: #111827;
+        --text-muted: #6b7280; --border-color: #d1d5db; --btn-blue: #3b82f6;
+        --btn-blue-hover: #2563eb; --color-green: #059669; --color-red: #dc2626;
         --color-neutral: #d97706;
     }
     .tww-wrapper {
-        width: 320px;
-        box-sizing: border-box;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        padding: 10px 12px;
-        background-color: var(--bg-main);
-        color: var(--text-main);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        width: 320px; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        padding: 10px 12px; background-color: var(--bg-main); color: var(--text-main);
+        border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     }
     .header {
         display: flex; justify-content: space-between; align-items: center;
-        border-bottom: 1px solid var(--border-color);
-        padding-bottom: 6px; margin-bottom: 8px;
-        cursor: grab; /* Курсор для перетаскивания */
-        user-select: none;
+        border-bottom: 1px solid var(--border-color); padding-bottom: 6px; margin-bottom: 8px;
+        cursor: grab; user-select: none;
     }
     .header:active { cursor: grabbing; }
     h2 { margin: 0; font-size: 14px; color: var(--text-main); text-align: center; flex-grow: 1; pointer-events: none; }
@@ -78,11 +52,7 @@ style.textContent = `
     .direction-toggle input { display: none; }
     .direction-toggle input[value="long"]:checked + label { background-color: var(--color-green); color: white; }
     .direction-toggle input[value="short"]:checked + label { background-color: var(--color-red); color: white; }
-    .calc-btn {
-        width: 100%; padding: 6px; background-color: var(--btn-blue); color: white;
-        border: none; border-radius: 4px; font-weight: bold; cursor: pointer;
-        margin-top: 2px; font-size: 13px;
-    }
+    .calc-btn { width: 100%; padding: 6px; background-color: var(--btn-blue); color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; margin-top: 2px; font-size: 13px; }
     .calc-btn:hover { background-color: var(--btn-blue-hover); }
     #result { margin-top: 6px; padding: 6px 8px; background-color: var(--bg-panel); border-radius: 4px; display: none; border: 1px solid var(--border-color); }
     .result-row { display: flex; justify-content: space-between; margin-bottom: 2px; font-size: 11px; }
@@ -95,7 +65,7 @@ style.textContent = `
 `;
 shadow.appendChild(style);
 
-// 4. Добавляем HTML-каркас внутрь Shadow DOM
+// 4. Добавляем HTML
 const wrapper = document.createElement('div');
 wrapper.className = 'tww-wrapper';
 wrapper.innerHTML = `
@@ -121,7 +91,7 @@ wrapper.innerHTML = `
         <div><label>Проскальз. (%)</label><input type="number" id="slippage_pct" value="0.03" step="0.01"></div>
     </div>
     <div class="section-title">Параметры сделки</div>
-    <div><label>Цена входа (Entry)</label><input type="number" id="entry" placeholder="Напр: 71300"></div>
+    <div><label>Цена входа (Entry)</label><input type="number" id="entry" placeholder="Авто-поиск..."></div>
     <div class="flex-row" style="align-items: flex-end;">
         <div style="flex: 1.2;">
             <label>Стоп-лосс (SL)</label>
@@ -163,54 +133,83 @@ wrapper.innerHTML = `
     </div>
 `;
 shadow.appendChild(wrapper);
-document.body.appendChild(container); // Внедряем капсулу в страницу биржи
+document.body.appendChild(container);
 
-// 5. Логика переключения темы (сохраняется в локальном хранилище расширения)
+// 🔥 БЛОКИРУЕМ ПЕРЕХВАТ КЛАВИШ ТРЕЙДИНГВЬЮ
+wrapper.addEventListener('keydown', (e) => e.stopPropagation());
+wrapper.addEventListener('keyup', (e) => e.stopPropagation());
+wrapper.addEventListener('keypress', (e) => e.stopPropagation());
+
+// 5. Темы и перетаскивание
 const themeBtn = shadow.getElementById('theme-toggle');
 chrome.storage.local.get(['tww_theme'], function(result) {
     const theme = result.tww_theme || 'dark';
     container.setAttribute('data-theme', theme);
     themeBtn.innerText = theme === 'dark' ? '☀️' : '🌙';
 });
-
 themeBtn.addEventListener('click', () => {
-    const currentTheme = container.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    const newTheme = container.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     container.setAttribute('data-theme', newTheme);
     themeBtn.innerText = newTheme === 'dark' ? '☀️' : '🌙';
     chrome.storage.local.set({ tww_theme: newTheme });
 });
 
-// 6. Логика перетаскивания окна (Drag and Drop)
 const dragHeader = shadow.getElementById('drag-header');
-let isDragging = false;
-let offsetX, offsetY;
+let isDragging = false, offsetX, offsetY;
+dragHeader.addEventListener('mousedown', (e) => { isDragging = true; offsetX = e.clientX - container.getBoundingClientRect().left; offsetY = e.clientY - container.getBoundingClientRect().top; });
+document.addEventListener('mousemove', (e) => { if (!isDragging) return; container.style.left = `${e.clientX - offsetX}px`; container.style.top = `${e.clientY - offsetY}px`; container.style.right = 'auto'; });
+document.addEventListener('mouseup', () => { isDragging = false; });
 
-dragHeader.addEventListener('mousedown', (e) => {
-    isDragging = true;
-    offsetX = e.clientX - container.getBoundingClientRect().left;
-    offsetY = e.clientY - container.getBoundingClientRect().top;
-});
+// 6. Парсинг цены (Новая версия с поддержкой TradingView QA атрибутов и русских запятых)
+function fetchPriceFromDOM() {
+    let priceText = null;
+    const host = window.location.hostname;
 
-document.addEventListener('mousemove', (e) => {
-    if (!isDragging) return;
-    container.style.left = `${e.clientX - offsetX}px`;
-    container.style.top = `${e.clientY - offsetY}px`;
-    container.style.right = 'auto'; // Отключаем привязку к правому краю при перемещении
-});
+    if (host.includes('tradingview.com')) {
+        const priceEl = document.querySelector('[data-qa-id="details-element price"] [data-qa-id="value"]') ||
+                        document.querySelector('.js-symbol-last span') || 
+                        document.querySelector('.tv-symbol-price-quote__value') ||
+                        document.querySelector('.js-symbol-lp span');
+        
+        if (priceEl) {
+            priceText = priceEl.innerText;
+        }
+        
+        if (!priceText && document.title) {
+            const match = document.title.match(/[\d]+[.,][\d]+/);
+            if (match) priceText = match[0];
+        }
+    } else if (host.includes('mexc.com')) {
+        const priceEl = document.querySelector('.ticker-price') || 
+                        document.querySelector('[class*="priceText"]') || 
+                        document.querySelector('.current-price');
+        if (priceEl) priceText = priceEl.innerText;
+    }
 
-document.addEventListener('mouseup', () => {
-    isDragging = false;
-});
+    if (priceText) {
+        // 🔥 МАГИЯ ЛОКАЛИЗАЦИИ: заменяем русскую запятую на математическую точку
+        const normalizedText = priceText.replace(',', '.');
+        
+        // Очищаем от мусора (пробелов, букв) и превращаем в число
+        const cleanPrice = parseFloat(normalizedText.replace(/[^0-9.]/g, ''));
+        if (!isNaN(cleanPrice)) return cleanPrice;
+    }
+    return null;
+}
 
-// 7. Слушатель команд от background.js (открытие/закрытие)
+// 7. Открытие/Закрытие + Автоподстановка цены
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "toggleCalculator") {
-        container.style.display = container.style.display === "none" ? "block" : "none";
+        const isHidden = container.style.display === "none";
+        if (isHidden) {
+            const currentPrice = fetchPriceFromDOM();
+            if (currentPrice) shadow.getElementById('entry').value = currentPrice;
+        }
+        container.style.display = isHidden ? "block" : "none";
     }
 });
 
-// 8. Логика расчетов (адаптирована для Shadow DOM)
+// 8. Математика
 shadow.getElementById('calc-btn').addEventListener('click', () => {
     const dep = parseFloat(shadow.getElementById('deposit').value);
     const riskPct = parseFloat(shadow.getElementById('risk').value);
@@ -218,72 +217,43 @@ shadow.getElementById('calc-btn').addEventListener('click', () => {
     const feePctInput = parseFloat(shadow.getElementById('fee_pct').value);
     const slippagePctInput = parseFloat(shadow.getElementById('slippage_pct').value);
     const entry = parseFloat(shadow.getElementById('entry').value);
-    
-    // В Shadow DOM радио-кнопки ищутся так:
     const isLong = shadow.querySelector('input[name="direction"]:checked').value === 'long';
-    
     const slMode = shadow.getElementById('sl_mode').value;
     const slInputValue = parseFloat(shadow.getElementById('sl_value').value);
     const tpMode = shadow.getElementById('tp_mode').value;
     const tpInputValue = parseFloat(shadow.getElementById('tp_value').value);
 
     if (!dep || !riskPct || !leverage || !entry || !slInputValue || !tpInputValue || isNaN(feePctInput) || isNaN(slippagePctInput)) {
-        alert("Пожалуйста, заполните все поля корректно!");
-        return;
+        alert("Пожалуйста, заполните все поля корректно!"); return;
     }
 
     const feeDecimal = feePctInput / 100;
     const slippageDecimal = slippagePctInput / 100;
 
     let slPrice, slDistanceAbs, stopDistancePct;
-    if (slMode === 'price') {
-        slPrice = slInputValue;
-        slDistanceAbs = Math.abs(entry - slPrice);
-        stopDistancePct = slDistanceAbs / entry;
-    } else if (slMode === 'percent') {
-        stopDistancePct = slInputValue / 100;
-        slDistanceAbs = entry * stopDistancePct;
-        slPrice = isLong ? entry - slDistanceAbs : entry + slDistanceAbs;
-    } else if (slMode === 'points') {
-        slDistanceAbs = slInputValue;
-        stopDistancePct = slDistanceAbs / entry;
-        slPrice = isLong ? entry - slDistanceAbs : entry + slDistanceAbs;
-    }
+    if (slMode === 'price') { slPrice = slInputValue; slDistanceAbs = Math.abs(entry - slPrice); stopDistancePct = slDistanceAbs / entry; } 
+    else if (slMode === 'percent') { stopDistancePct = slInputValue / 100; slDistanceAbs = entry * stopDistancePct; slPrice = isLong ? entry - slDistanceAbs : entry + slDistanceAbs; } 
+    else if (slMode === 'points') { slDistanceAbs = slInputValue; stopDistancePct = slDistanceAbs / entry; slPrice = isLong ? entry - slDistanceAbs : entry + slDistanceAbs; }
 
     if (isLong && slPrice >= entry) { alert("Ошибка: Для LONG Стоп-лосс должен быть НИЖЕ входа."); return; }
     if (!isLong && slPrice <= entry) { alert("Ошибка: Для SHORT Стоп-лосс должен быть ВЫШЕ входа."); return; }
 
     let tpPrice, actualRR;
-    if (tpMode === 'ratio') {
-        actualRR = tpInputValue;
-        tpPrice = isLong ? entry + (slDistanceAbs * actualRR) : entry - (slDistanceAbs * actualRR);
-    } else if (tpMode === 'price') {
-        tpPrice = tpInputValue;
-        let tpDistanceAbs = Math.abs(entry - tpPrice);
-        actualRR = tpDistanceAbs / slDistanceAbs;
-    } else if (tpMode === 'percent') {
-        let tpDist = entry * (tpInputValue / 100);
-        tpPrice = isLong ? entry + tpDist : entry - tpDist;
-        actualRR = tpDist / slDistanceAbs;
-    } else if (tpMode === 'points') {
-        tpPrice = isLong ? entry + tpInputValue : entry - tpInputValue;
-        actualRR = tpInputValue / slDistanceAbs;
-    }
+    if (tpMode === 'ratio') { actualRR = tpInputValue; tpPrice = isLong ? entry + (slDistanceAbs * actualRR) : entry - (slDistanceAbs * actualRR); } 
+    else if (tpMode === 'price') { tpPrice = tpInputValue; let tpDistanceAbs = Math.abs(entry - tpPrice); actualRR = tpDistanceAbs / slDistanceAbs; } 
+    else if (tpMode === 'percent') { let tpDist = entry * (tpInputValue / 100); tpPrice = isLong ? entry + tpDist : entry - tpDist; actualRR = tpDist / slDistanceAbs; } 
+    else if (tpMode === 'points') { tpPrice = isLong ? entry + tpInputValue : entry - tpInputValue; actualRR = tpInputValue / slDistanceAbs; }
 
     if (isLong && tpPrice <= entry) { alert("Ошибка: Для LONG Тейк-профит должен быть ВЫШЕ входа."); return; }
     if (!isLong && tpPrice >= entry) { alert("Ошибка: Для SHORT Тейк-профит должен быть НИЖЕ входа."); return; }
 
     const riskInDollars = dep * (riskPct / 100);
     const totalFeesAndSlippage = (feeDecimal * 2) + slippageDecimal;
-    
     const positionVolume = riskInDollars / (stopDistancePct + totalFeesAndSlippage);
     const requiredMargin = positionVolume / leverage;
     const estimatedFees = positionVolume * totalFeesAndSlippage;
 
-    if (requiredMargin > dep) {
-        alert(`Недостаточно средств! Требуемая маржа (${requiredMargin.toFixed(2)}$) превышает депозит.`);
-        return;
-    }
+    if (requiredMargin > dep) { alert(`Недостаточно средств! Требуемая маржа (${requiredMargin.toFixed(2)}$) превышает депозит.`); return; }
 
     const tpDistancePct = Math.abs(entry - tpPrice) / entry;
     const grossProfit = positionVolume * tpDistancePct;
